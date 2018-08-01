@@ -1,22 +1,28 @@
 package com.example.vikaslandge.tlephonetest
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
- import android.support.v4.app.ActivityCompat
+import android.provider.MediaStore
+import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity() {
 
+    var uri : Uri? =null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -71,6 +77,19 @@ class MainActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "Number is mandatory", Toast.LENGTH_LONG).show()
             }
+
+           sendmail.setOnClickListener({
+
+                var i = Intent( )
+                i.action = Intent.ACTION_SEND
+                i.putExtra(Intent.EXTRA_EMAIL, arrayOf(mailid.text.toString()))
+                i.putExtra(Intent.EXTRA_SUBJECT, subject.text.toString())
+                i.putExtra(Intent.EXTRA_TEXT,message.text.toString())
+                i.putExtra(Intent.EXTRA_STREAM,uri)
+                i.type = "message/rfc822"
+                startActivity(i)
+
+            })
         }
         attach.setOnClickListener(){
             var adiaolg  = AlertDialog.Builder(this)
@@ -83,9 +102,35 @@ class MainActivity : AppCompatActivity() {
                     startActivityForResult(i,123)
                 }
             })
+            adiaolg.setNegativeButton("File", object : DialogInterface.OnClickListener{
+                override fun onClick(dialog: DialogInterface?, which: Int) {
+                    var i = Intent()
+                    i.action = Intent.ACTION_GET_CONTENT
+                    i.type = "*/*"
+                    startActivityForResult(i,124)
+                 }
+
+            })
             adiaolg.show()
 
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode==124 && resultCode==Activity.RESULT_OK){
+
+             uri = data!!.data
+        }else if (requestCode==123 && resultCode == Activity.RESULT_OK){
+            var bmp = data!!.extras.get("data") as Bitmap
+            uri = getImageUri(this@MainActivity,bmp)
+        }
+    }
+    fun getImageUri(inContext: Context, inImage: Bitmap): Uri {
+        val bytes = ByteArrayOutputStream()
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null)
+        return Uri.parse(path)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

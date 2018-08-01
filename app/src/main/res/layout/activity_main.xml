@@ -62,12 +62,14 @@
         android:layout_height="wrap_content"
         android:id="@+id/message"
         android:hint="message"/>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:id="@+id/attach"
-        android:background="@drawable/ic_attach_file_black_24dp"
+        android:text="Attach"
+         android:drawableStart="@drawable/ic_attach_file_black_24dp"
         />
     <LinearLayout
         android:layout_width="match_parent"
